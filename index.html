@@ -1,59 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Stash</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Stash</title>
+
+<style>
+:root {
+  --bg: #0f1116;
+  --surface: #161a24;
+  --surface-soft: #1d2230;
+  --accent: #6b8cff;
+  --pin: #2a3050;
+  --text: #e7e9ee;
+  --muted: #9aa3b2;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; font-family: system-ui, sans-serif; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Layout */
+.app {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+header input {
+  width: 60%;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--surface);
+  color: #fff;
+}
+
+header button {
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  background: var(--surface);
+  padding: 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.item.pinned {
+  background: var(--pin);
+  border-left: 4px solid var(--accent);
+}
+
+.item strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.item span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Expanded */
+.details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: none;
+}
+
+.details p {
+  margin: 6px 0;
+  font-size: 0.85rem;
+}
+
+.images img {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 10px;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: var(--surface-soft);
+  padding: 20px;
+  width: 360px;
+  border-radius: 18px;
+}
+
+.modal-box label {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.modal-box input,
+.modal-box textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border-radius: 10px;
+  border: none;
+  background: var(--surface);
+  color: #fff;
+}
+
+.modal-box .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.actions button:first-child {
+  background: var(--accent);
+  color: #fff;
+}
+
+.actions button:last-child {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
+}
+</style>
 </head>
+
 <body>
 
 <div class="app">
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h1>Stash</h1>
-    <ul id="categoryList">
-      <li class="active" data-cat="all">All</li>
-    </ul>
-    <button id="newCategoryBtn">+ New category</button>
-  </aside>
+<header>
+  <input placeholder="Search…">
+  <button id="addBtn">Add account</button>
+</header>
 
-  <!-- Main -->
-  <main class="main">
-    <header class="top">
-      <input id="search" placeholder="Search…" />
-      <button id="addBtn">Add account</button>
-    </header>
-
-    <section id="list" class="list"></section>
-  </main>
-
-  <!-- Detail Panel -->
-  <aside id="detail" class="detail hidden">
-    <div class="detail-header">
-      <h3 id="dTitle"></h3>
-      <button id="closeDetail">✕</button>
-    </div>
-
-    <div class="detail-body">
-      <p><strong>Username</strong><br><span id="dUser"></span></p>
-
-      <p><strong>Password</strong><br>
-        <span id="dPass">••••••</span>
-        <button id="togglePass">👁</button>
-      </p>
-
-      <p><strong>Notes</strong></p>
-      <p id="dNotes" class="muted"></p>
-
-      <p><strong>Screenshots</strong></p>
-      <div id="dImages" class="images"></div>
-    </div>
-  </aside>
+<div class="list" id="list"></div>
 
 </div>
 
-<!-- Add Modal -->
+<!-- Modal -->
 <div class="modal" id="modal">
   <div class="modal-box">
     <h3>Add account</h3>
@@ -62,30 +195,89 @@
     <input id="name">
 
     <label>Username</label>
-    <input id="username">
+    <input id="user">
 
     <label>Password</label>
-    <input id="password" type="password">
+    <input id="pass" type="password">
 
     <label>Notes</label>
     <textarea id="notes"></textarea>
 
-    <label>Screenshots</label>
-    <input id="images" type="file" multiple>
+    <label>Images</label>
+    <input id="imgs" type="file" multiple>
 
-    <div class="notify">
+    <div class="row">
       <input type="checkbox" id="notify">
-      <label>Enable notifier</label>
-      <input type="date" id="notifyDate">
+      <label>Important / notify</label>
     </div>
 
     <div class="actions">
       <button id="save">Save</button>
-      <button id="cancel">Cancel</button>
+      <button id="close">Cancel</button>
     </div>
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+const list = document.getElementById("list");
+const modal = document.getElementById("modal");
+
+let items = [];
+
+addBtn.onclick = () => modal.style.display = "flex";
+close.onclick = () => modal.style.display = "none";
+
+save.onclick = () => {
+  const images = [...imgs.files].map(f => URL.createObjectURL(f));
+
+  items.push({
+    name: name.value,
+    user: user.value,
+    pass: pass.value,
+    notes: notes.value,
+    images,
+    pinned: notify.checked,
+    open: false
+  });
+
+  modal.style.display = "none";
+  name.value = user.value = pass.value = notes.value = "";
+  notify.checked = false;
+  render();
+};
+
+function render() {
+  list.innerHTML = "";
+
+  items
+    .sort((a,b) => b.pinned - a.pinned)
+    .forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item" + (item.pinned ? " pinned" : "");
+
+      div.innerHTML = `
+        <strong>${item.name}</strong>
+        <span>${item.user}</span>
+        <div class="details">
+          <p><b>Password:</b> ${item.pass}</p>
+          <p>${item.notes}</p>
+          <div class="images">
+            ${item.images.map(i => `<img src="${i}">`).join("")}
+          </div>
+        </div>
+      `;
+
+      div.onclick = () => {
+        const d = div.querySelector(".details");
+        d.style.display = d.style.display === "block" ? "none" : "block";
+        item.pinned = false;
+        render();
+      };
+
+      list.appendChild(div);
+    });
+}
+</script>
+
 </body>
 </html>
