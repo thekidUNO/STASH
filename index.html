@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stash</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="nav">
+    <div class="brand">Stash</div>
+
+    <ul id="categoryList">
+      <li class="active" data-cat="all">All</li>
+    </ul>
+
+    <button id="newCategoryBtn" class="nav-action">
+      + New category
+    </button>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+    <header class="header">
+      <input type="text" placeholder="Search…" />
+      <button id="addBtn">Add account</button>
+    </header>
+
+    <section id="emptyState" class="empty">
+      <h3>No accounts yet</h3>
+      <p>Create your first entry to get started.</p>
+      <button id="emptyAddBtn">Add account</button>
+    </section>
+
+    <section id="list" class="list"></section>
+  </main>
+
+</div>
+
+<!-- Add Account Modal -->
+<div class="modal" id="accountModal">
+  <div class="modal-card">
+    <h3>Add account</h3>
+
+    <label>Service</label>
+    <input id="service">
+
+    <label>Username / Email</label>
+    <input id="username">
+
+    <label>Password</label>
+    <input id="password" type="password">
+
+    <label>Category (optional)</label>
+    <select id="categorySelect">
+      <option value="">None</option>
+    </select>
+
+    <label>Notes</label>
+    <textarea id="notes"></textarea>
+
+    <div class="actions">
+      <button id="saveAccount">Save</button>
+      <button class="ghost" id="closeAccount">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal" id="categoryModal">
+  <div class="modal-card small">
+    <h3>New category</h3>
+    <input id="newCategoryName" placeholder="Category name">
+    <div class="actions">
+      <button id="createCategory">Create</button>
+      <button class="ghost" id="closeCategory">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
