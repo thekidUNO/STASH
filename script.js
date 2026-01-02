@@ -1,75 +1,54 @@
 let accounts = [];
-let categories = [];
-let current = "all";
+let active = null;
 
 const list = document.getElementById("list");
-const empty = document.getElementById("emptyState");
-const categoryList = document.getElementById("categoryList");
-const categorySelect = document.getElementById("categorySelect");
+const detail = document.getElementById("detail");
 
-const accountModal = document.getElementById("accountModal");
-const categoryModal = document.getElementById("categoryModal");
+/* Modal */
+addBtn.onclick = () => modal.style.display = "flex";
+cancel.onclick = () => modal.style.display = "none";
 
-addBtn.onclick = emptyAddBtn.onclick = () => accountModal.style.display = "flex";
-closeAccount.onclick = () => accountModal.style.display = "none";
-newCategoryBtn.onclick = () => categoryModal.style.display = "flex";
-closeCategory.onclick = () => categoryModal.style.display = "none";
+save.onclick = () => {
+  const imgs = [...images.files].map(f => URL.createObjectURL(f));
 
-createCategory.onclick = () => {
-  const name = newCategoryName.value.trim();
-  if (!name || categories.includes(name)) return;
-
-  categories.push(name);
-  updateCategories();
-  newCategoryName.value = "";
-  categoryModal.style.display = "none";
-};
-
-saveAccount.onclick = () => {
   accounts.push({
-    service: service.value,
+    name: name.value,
     user: username.value,
-    category: categorySelect.value
+    pass: password.value,
+    notes: notes.value,
+    images: imgs,
+    pinned: notify.checked,
+    viewed: false
   });
 
-  accountModal.style.display = "none";
-  service.value = username.value = password.value = notes.value = "";
+  modal.style.display = "none";
   render();
 };
 
-function updateCategories() {
-  categoryList.innerHTML = `<li class="active" data-cat="all">All</li>`;
-  categorySelect.innerHTML = `<option value="">None</option>`;
-
-  categories.forEach(c => {
-    categoryList.innerHTML += `<li data-cat="${c}">${c}</li>`;
-    categorySelect.innerHTML += `<option value="${c}">${c}</option>`;
-  });
-
-  document.querySelectorAll(".nav li").forEach(li => {
-    li.onclick = () => {
-      document.querySelectorAll(".nav li").forEach(x => x.classList.remove("active"));
-      li.classList.add("active");
-      current = li.dataset.cat;
-      render();
-    };
-  });
-}
-
 function render() {
   list.innerHTML = "";
-  empty.style.display = accounts.length ? "none" : "block";
 
   accounts
-    .filter(a => current === "all" || a.category === current)
-    .forEach(a => {
-      list.innerHTML += `
-        <div class="row">
-          <div class="meta">
-            <strong>${a.service}</strong>
-            <span>${a.user}</span>
-          </div>
-        </div>
-      `;
+    .sort((a,b) => b.pinned - a.pinned)
+    .forEach((a,i) => {
+      const row = document.createElement("div");
+      row.className = "row" + (a.pinned ? " pinned" : "");
+      row.innerHTML = `<strong>${a.name}</strong><br><span>${a.user}</span>`;
+      row.onclick = () => openDetail(i);
+      list.appendChild(row);
     });
+}
+
+function openDetail(i) {
+  const a = accounts[i];
+  a.pinned = false; // 🔓 UNPIN WHEN VIEWED
+  active = a;
+
+  dTitle.textContent = a.name;
+  dUser.textContent = a.user;
+  dNotes.textContent = a.notes;
+  dImages.innerHTML = a.images.map(src => `<img src="${src}">`).join("");
+
+  detail.classList.remove("hidden");
+  render();
 }
