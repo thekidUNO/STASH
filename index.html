@@ -1,82 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Stash</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="layout">
+<div class="app">
 
   <!-- Sidebar -->
-  <aside class="nav">
-    <div class="brand">Stash</div>
-
+  <aside class="sidebar">
+    <h1>Stash</h1>
     <ul id="categoryList">
       <li class="active" data-cat="all">All</li>
     </ul>
-
-    <button id="newCategoryBtn" class="nav-action">
-      + New category
-    </button>
+    <button id="newCategoryBtn">+ New category</button>
   </aside>
 
-  <!-- Content -->
-  <main class="content">
-    <header class="header">
-      <input type="text" placeholder="Search…" />
+  <!-- Main -->
+  <main class="main">
+    <header class="top">
+      <input id="search" placeholder="Search…" />
       <button id="addBtn">Add account</button>
     </header>
-
-    <section id="emptyState" class="empty">
-      <h3>No accounts yet</h3>
-      <p>Create your first entry to get started.</p>
-      <button id="emptyAddBtn">Add account</button>
-    </section>
 
     <section id="list" class="list"></section>
   </main>
 
+  <!-- Detail Panel -->
+  <aside id="detail" class="detail hidden">
+    <div class="detail-header">
+      <h3 id="dTitle"></h3>
+      <button id="closeDetail">✕</button>
+    </div>
+
+    <div class="detail-body">
+      <p><strong>Username</strong><br><span id="dUser"></span></p>
+
+      <p><strong>Password</strong><br>
+        <span id="dPass">••••••</span>
+        <button id="togglePass">👁</button>
+      </p>
+
+      <p><strong>Notes</strong></p>
+      <p id="dNotes" class="muted"></p>
+
+      <p><strong>Screenshots</strong></p>
+      <div id="dImages" class="images"></div>
+    </div>
+  </aside>
+
 </div>
 
-<!-- Add Account Modal -->
-<div class="modal" id="accountModal">
-  <div class="modal-card">
+<!-- Add Modal -->
+<div class="modal" id="modal">
+  <div class="modal-box">
     <h3>Add account</h3>
 
-    <label>Service</label>
-    <input id="service">
+    <label>Name</label>
+    <input id="name">
 
-    <label>Username / Email</label>
+    <label>Username</label>
     <input id="username">
 
     <label>Password</label>
     <input id="password" type="password">
 
-    <label>Category (optional)</label>
-    <select id="categorySelect">
-      <option value="">None</option>
-    </select>
-
     <label>Notes</label>
     <textarea id="notes"></textarea>
 
-    <div class="actions">
-      <button id="saveAccount">Save</button>
-      <button class="ghost" id="closeAccount">Cancel</button>
-    </div>
-  </div>
-</div>
+    <label>Screenshots</label>
+    <input id="images" type="file" multiple>
 
-<!-- Category Modal -->
-<div class="modal" id="categoryModal">
-  <div class="modal-card small">
-    <h3>New category</h3>
-    <input id="newCategoryName" placeholder="Category name">
+    <div class="notify">
+      <input type="checkbox" id="notify">
+      <label>Enable notifier</label>
+      <input type="date" id="notifyDate">
+    </div>
+
     <div class="actions">
-      <button id="createCategory">Create</button>
-      <button class="ghost" id="closeCategory">Cancel</button>
+      <button id="save">Save</button>
+      <button id="cancel">Cancel</button>
     </div>
   </div>
 </div>
