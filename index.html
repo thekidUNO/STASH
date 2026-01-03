@@ -2,519 +2,505 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Stash</title>
-
-<!-- FONT -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-<!-- SUPABASE -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STASH | Secure Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-/* =========================================================
-   VARIABLES
-========================================================= */
 :root {
-  --bg:#f4f6f8;
-  --panel:#ffffff;
-  --surface:#f9fafb;
-  --accent:#3b82f6;
-  --accent-soft:#eef2ff;
-  --text:#111827;
-  --muted:#6b7280;
-  --border:#e5e7eb;
-  --radius:18px;
-  --shadow:0 8px 24px rgba(0,0,0,.06);
+  --bg: #09090b;
+  --panel: #121215;
+  --accent: #ff8a3d;
+  --accent-glow: rgba(255, 138, 61, 0.15);
+  --text: #fafafa;
+  --muted: #71717a;
+  --border: #27272a;
+  --radius: 16px;
+  --shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
-/* =========================================================
-   RESET
-========================================================= */
-* { box-sizing:border-box; font-family:Inter,system-ui }
-body { margin:0; background:var(--bg); color:var(--text) }
+* { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.2s ease; }
 
-/* =========================================================
-   LAYOUT
-========================================================= */
-.app {
-  display:grid;
-  grid-template-columns:240px 1fr 360px;
-  height:100vh;
-}
+body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
 
+.app { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
+
+/* Sidebar Styling */
 .sidebar {
-  background:var(--panel);
-  padding:20px;
-  border-right:1px solid var(--border);
+  background: var(--panel);
+  padding: 32px 20px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
 }
 
-.main {
-  padding:24px;
-  overflow:auto;
+.brand { 
+  font-weight: 800; 
+  font-size: 1.4rem; 
+  letter-spacing: -0.02em; 
+  margin-bottom: 32px; 
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.detail {
-  background:var(--panel);
-  padding:20px;
-  border-left:1px solid var(--border);
-  display:none;
-  overflow:auto;
+.nav-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.05rem;
+  margin: 20px 0 8px 12px;
 }
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
-.sidebar h2 {
-  margin:0 0 20px;
+.nav-item, .folder {
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  text-decoration: none;
 }
 
-.folder {
-  padding:10px 14px;
-  border-radius:12px;
-  cursor:pointer;
-  color:var(--muted);
-  margin-bottom:6px;
-}
+.nav-item:hover, .folder:hover { background: #1c1c21; color: var(--text); }
+.nav-item.active, .folder.active { background: var(--accent-glow); color: var(--accent); font-weight: 600; }
 
-.folder.active {
-  background:var(--accent-soft);
-  color:var(--text);
+.folder button {
+  opacity: 0; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem;
 }
+.folder:hover button { opacity: 1; }
 
 .new-folder {
-  margin-top:14px;
-  padding:10px;
-  border-radius:12px;
-  border:1px dashed var(--border);
-  background:none;
-  cursor:pointer;
-  width:100%;
+  margin-top: auto;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
 }
+.new-folder:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 
-/* =========================================================
-   HEADER
-========================================================= */
-.top {
-  display:flex;
-  justify-content:flex-end;
-  margin-bottom:20px;
+/* Main Content Area */
+.main { padding: 40px; overflow-y: auto; height: 100vh; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
 }
+.header h2 { font-size: 1.8rem; font-weight: 700; margin: 0; }
 
-.top button {
-  padding:10px 18px;
-  border-radius:999px;
-  border:none;
-  background:var(--accent);
-  color:white;
-  cursor:pointer;
+.primary-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); }
 
-/* =========================================================
-   LIST / CARDS
-========================================================= */
-.list {
-  display:flex;
-  flex-direction:column;
-  gap:14px;
+/* Dashboard Cards */
+.dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+.stat {
+  background: #16161a;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
 }
+.stat span { color: var(--muted); font-size: 0.85rem; font-weight: 500; }
+.stat h2 { margin: 10px 0 0 0; font-size: 2.2rem; }
 
+/* Item List Grid */
+.list { 
+  display: none; 
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 20px; 
+}
 .card {
-  background:var(--panel);
-  padding:16px;
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
+  background: #16161a;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
-
-.card.pinned {
-  background:var(--accent-soft);
-  border-left:4px solid var(--accent);
-}
-
-.card small {
-  color:var(--muted);
-}
-
-.card-actions {
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
+.card.pinned { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+.card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+.card-sub { color: var(--muted); font-size: 0.85rem; cursor: pointer; margin-bottom: 20px; overflow: hidden; text-overflow: ellipsis; }
+.card-actions { margin-top: auto; }
 .card-actions button {
-  padding:6px 10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--surface);
-  cursor:pointer;
+  width: 100%; background: #27272a; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 500;
 }
+.card-actions button:hover { background: #3f3f46; }
 
-/* =========================================================
-   INLINE INFO
-========================================================= */
-.info {
-  margin-top:12px;
-  padding-top:12px;
-  border-top:1px solid var(--border);
-  display:none;
-  font-size:.85rem;
-}
-
-/* =========================================================
-   DETAIL PANEL
-========================================================= */
-.detail h3 { margin-top:0 }
-.detail img {
-  width:100%;
-  border-radius:12px;
-  margin-top:10px;
-}
-
-/* =========================================================
-   MODALS
-========================================================= */
+/* Modals & Overlays */
 .modal {
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.55);
-  display:none;
-  align-items:center;
-  justify-content:center;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; z-index: 100;
 }
-
-.modal-box {
-  width:420px;
-  background:var(--panel);
-  padding:20px;
-  border-radius:20px;
+.popup-card, .overlay-card {
+  width: 100%; max-width: 460px; background: #16161a; padding: 32px; border-radius: 24px; border: 1px solid var(--border);
 }
-
-.modal-box h3 { margin-top:0 }
-
-.modal-box label {
-  display:block;
-  margin-top:12px;
-  font-size:.8rem;
-  color:var(--muted);
+input, textarea, select {
+  width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #09090b; color: #fff; margin-top: 6px;
 }
+label { display: block; margin-top: 16px; color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
 
-.modal-box input,
-.modal-box textarea,
-.modal-box select {
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid var(--border);
-}
+.copy-row { display: flex; gap: 8px; align-items: flex-end; }
+.copy-row button { margin-top: 6px; background: #27272a; border: none; color: #fff; border-radius: 10px; padding: 0 14px; cursor: pointer; }
 
-.actions {
-  display:flex;
-  gap:10px;
-  margin-top:18px;
-}
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+.actions button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+.ok { background: var(--accent); color: #000; }
+.cancel { background: #27272a; color: #fff; }
+.danger { background: #ef4444; color: #fff; }
 
-.actions button {
-  flex:1;
-  padding:10px;
-  border-radius:12px;
-  border:none;
-  cursor:pointer;
-}
-
-.actions button:first-child {
-  background:var(--accent);
-  color:white;
-}
-
-.actions button:last-child {
-  background:var(--surface);
-  border:1px solid var(--border);
-}
-
-/* =========================================================
-   EMPTY STATE
-========================================================= */
-.empty {
-  color:var(--muted);
-  padding:40px;
-  text-align:center;
-}
+.file-row { position: relative; margin-top: 15px; }
+.remove-file { position: absolute; top: 10px; right: 10px; background: #ef4444; border: none; color: white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; }
+.overlay-card img { width: 100%; border-radius: 12px; display: block; }
 </style>
 </head>
 
 <body>
 
 <div class="app">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <h2>Stash</h2>
+    <div class="brand">📦 STASH</div>
+    
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" id="nav-dash" onclick="showDashboard()">Dashboard</div>
+    
+    <div class="nav-label">Folders</div>
     <div id="folders"></div>
-    <button class="new-folder" onclick="openFolderModal()">+ New folder</button>
+    
+    <button class="new-folder" onclick="openFolderModal()">+ Create Folder</button>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
-    <div class="top">
-      <button onclick="openItemModal()">Add item</button>
+    <div class="header">
+      <h2 id="title">Dashboard</h2>
+      <button class="primary-btn" onclick="openItemModal()"><span>+</span> Add Item</button>
     </div>
-    <div class="list" id="list"></div>
-  </main>
 
-  <!-- DETAIL PANEL -->
-  <aside class="detail" id="detail"></aside>
-
+    <div id="dashboard" class="dashboard"></div>
+    <div id="list" class="list"></div>
+    <div id="overlay" class="overlay modal"></div> </main>
 </div>
 
-<!-- FOLDER MODAL -->
-<div class="modal" id="folderModal">
-  <div class="modal-box">
-    <h3>New folder</h3>
-    <input id="folderName" placeholder="Folder name">
+<div id="folderModal" class="modal">
+  <div class="popup-card">
+    <h3 style="margin-top:0">New Folder</h3>
+    <input id="folderName" placeholder="e.g. Work, Social, Banking">
     <div class="actions">
-      <button onclick="createFolder()">Create</button>
-      <button onclick="closeFolderModal()">Cancel</button>
+      <button class="ok" onclick="createFolder()">Create</button>
+      <button class="cancel" onclick="closeFolderModal()">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- ITEM MODAL -->
-<div class="modal" id="itemModal">
-  <div class="modal-box">
-    <h3>Add item</h3>
+<div id="itemModal" class="modal">
+  <div class="popup-card">
+    <h3 style="margin-top:0">Add New Item</h3>
+    <label>Account Name</label><input id="itemName" placeholder="Netflix, GitHub, etc.">
 
-    <label>Name</label>
-    <input id="itemName">
+    <label>Username / Email</label>
+    <div class="copy-row">
+      <input id="itemIdentifier">
+      <button onclick="copy(itemIdentifier.value)">📋</button>
+    </div>
 
-    <label>Identifier</label>
-    <input id="itemIdentifier">
+    <label>Password</label>
+    <div class="copy-row">
+      <input id="itemPassword" type="password">
+      <button onclick="togglePassword()">👁</button>
+      <button onclick="copy(itemPassword.value)">📋</button>
+    </div>
 
-    <label>Folder (required)</label>
-    <select id="itemFolder"></select>
-
-    <label>Notes</label>
-    <textarea id="itemNotes"></textarea>
-
-    <label>Screenshots (optional)</label>
-    <input type="file" id="itemImages" multiple>
-
-    <label>
-      <input type="checkbox" id="itemPinned"> Pin / notify
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div><label>Folder</label><select id="itemFolder"></select></div>
+        <div><label>Notify Date</label><input type="date" id="itemDate"></div>
+    </div>
+    
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:20px;">
+        <input type="checkbox" id="itemPin" style="width:auto; margin:0"> Pin to top
     </label>
 
+    <label>Screenshots</label><input type="file" id="itemImages" multiple>
+    <label>Notes</label><textarea id="itemNotes" rows="3"></textarea>
+
     <div class="actions">
-      <button onclick="saveItem()">Save</button>
-      <button onclick="closeItemModal()">Cancel</button>
+      <button class="ok" onclick="saveItem()">Save Item</button>
+      <button class="cancel" onclick="closeItemModal()">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-/* =========================================================
-   SUPABASE
-========================================================= */
-const supabase = supabaseJs.createClient(
-  "https://cagvxdkcqqqfevwwcbaa.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhZ3Z4ZGtjcXFxZmV2d3djYmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NjE4NzAsImV4cCI6MjA4MzAzNzg3MH0.ExUdxfTMpNXc8-yW1NVcqv4P5Vy9PbKjGJSAQDcA-rk"
+const sb=supabase.createClient(
+"https://cagvxdkcqqqfevwwcbaa.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhZ3Z4ZGtjcXFxZmV2d3djYmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NjE4NzAsImV4cCI6MjA4MzAzNzg3MH0.ExUdxfTMpNXc8-yW1NVcqv4P5Vy9PbKjGJSAQDcA-rk"
 );
 
-/* =========================================================
-   STATE
-========================================================= */
-let state = {
-  folders: [],
-  items: [],
-  activeFolder: null
-};
+let state={folders:[],items:[],activeFolder:null};
 
-/* =========================================================
-   INIT
-========================================================= */
+const foldersEl=document.getElementById("folders");
+const listEl=document.getElementById("list");
+const dashboardEl=document.getElementById("dashboard");
+const overlay=document.getElementById("overlay");
+const titleEl=document.getElementById("title");
+
 init();
+
 async function init(){
   await loadFolders();
   await loadItems();
+  showDashboard();
 }
 
-/* =========================================================
-   LOADERS
-========================================================= */
+function copy(t){
+    navigator.clipboard.writeText(t);
+    // Simple feedback could be added here
+}
+
+function togglePassword(){
+  const p = document.getElementById("itemPassword");
+  p.type = p.type === "password" ? "text" : "password";
+}
+
 async function loadFolders(){
-  const { data } = await supabase
-    .from("folders")
-    .select("*")
-    .order("created_at");
-  state.folders = data || [];
-  if (!state.activeFolder && state.folders[0])
-    state.activeFolder = state.folders[0].id;
+  const {data}=await sb.from("folders").select("*");
+  state.folders=data||[];
   renderFolders();
 }
 
 async function loadItems(){
-  const { data } = await supabase
-    .from("accounts")
-    .select("*");
-  state.items = data || [];
-  renderItems();
+  const {data}=await sb.from("accounts").select("*");
+  state.items=data||[];
 }
 
-/* =========================================================
-   RENDER
-========================================================= */
 function renderFolders(){
-  folders.innerHTML="";
-  itemFolder.innerHTML="";
-
+  foldersEl.innerHTML="";
+  const select = document.getElementById("itemFolder");
+  select.innerHTML="";
+  
   state.folders.forEach(f=>{
     const d=document.createElement("div");
     d.className="folder"+(f.id===state.activeFolder?" active":"");
-    d.textContent=f.name;
+    d.innerHTML=`<span>${f.name}</span><button onclick="event.stopPropagation(); deleteFolder('${f.id}')">×</button>`;
     d.onclick=()=>{
-      state.activeFolder=f.id;
-      renderFolders();
-      renderItems();
+        state.activeFolder=f.id;
+        showList(f.name);
+        renderFolders();
     };
-    folders.appendChild(d);
-
-    const o=document.createElement("option");
-    o.value=f.id;
-    o.textContent=f.name;
-    itemFolder.appendChild(o);
+    foldersEl.appendChild(d);
+    select.innerHTML+=`<option value="${f.id}">${f.name}</option>`;
   });
+}
+
+function renderDashboard(){
+  dashboardEl.innerHTML=`
+    <div class="stat"><span>Total Items</span><h2>${state.items.length}</h2></div>
+    <div class="stat"><span>Pinned</span><h2>${state.items.filter(i=>i.pinned).length}</h2></div>
+    <div class="stat"><span>Alerts</span><h2>${state.items.filter(i=>i.notify_date).length}</h2></div>
+    <div class="stat"><span>Categories</span><h2>${state.folders.length}</h2></div>`;
+}
+
+function showDashboard(){
+  state.activeFolder = null;
+  titleEl.innerText = "Dashboard";
+  dashboardEl.style.display="grid";
+  listEl.style.display="none";
+  document.getElementById("nav-dash").classList.add("active");
+  renderFolders();
+  renderDashboard();
+}
+
+function showList(folderName){
+  titleEl.innerText = folderName;
+  dashboardEl.style.display="none";
+  listEl.style.display="grid";
+  document.getElementById("nav-dash").classList.remove("active");
+  renderItems();
 }
 
 function renderItems(){
-  list.innerHTML="";
-  detail.style.display="none";
-
-  const filtered=state.items
+  listEl.innerHTML="";
+  const filtered = state.items
     .filter(i=>i.folder_id===state.activeFolder)
-    .sort((a,b)=>b.pinned-a.pinned);
+    .sort((a,b) => b.pinned - a.pinned);
 
-  if(filtered.length===0){
-    list.innerHTML=`<div class="empty">No items in this folder.</div>`;
-    return;
+  if(filtered.length === 0) {
+      listEl.innerHTML = `<p style="color:var(--muted); grid-column: 1/-1;">No items found in this folder.</p>`;
+      return;
   }
 
   filtered.forEach(i=>{
-    const c=document.createElement("div");
-    c.className="card"+(i.pinned?" pinned":"");
-
-    c.innerHTML=`
-      <strong>${i.name}</strong><br>
-      <small>${i.identifier}</small>
-
-      <div class="info">${i.notes||"No notes"}</div>
-
-      <div class="card-actions">
-        <button onclick="event.stopPropagation();toggleInfo(this)">Info</button>
-        <button onclick="event.stopPropagation();openDetail('${i.id}')">View</button>
-      </div>
-    `;
-    list.appendChild(c);
-  });
+      listEl.innerHTML+=`
+        <div class="card ${i.pinned?'pinned':''}">
+          <div class="card-title">${i.name}</div>
+          <div class="card-sub" onclick="copy('${i.identifier}')">${i.identifier} 📋</div>
+          <div class="card-actions">
+            <button onclick="openCard('${i.id}')">View Details</button>
+          </div>
+        </div>`;
+    });
 }
 
-/* =========================================================
-   INTERACTION
-========================================================= */
-function toggleInfo(btn){
-  const info=btn.closest(".card").querySelector(".info");
-  info.style.display=info.style.display==="block"?"none":"block";
-}
-
-async function openDetail(id){
+async function openCard(id){
   const item=state.items.find(i=>i.id===id);
-  if(!item) return;
+  const {data}=await sb.from("screenshots").select("*").eq("account_id",id);
+  overlay.style.display="flex";
+  overlay.innerHTML=`
+    <div class="overlay-card">
+      <h2 style="margin-top:0">${item.name}</h2>
+      <label>Identifier</label>
+      <div class="copy-row">
+        <input value="${item.identifier}" readonly>
+        <button onclick="copy('${item.identifier}')">📋</button>
+      </div>
 
-  if(item.pinned){
-    await supabase.from("accounts")
-      .update({pinned:false})
-      .eq("id",id);
-  }
+      
+      <label>Password</label>
+      <div class="copy-row">
+        <input
+          type="password"
+          value="${item.password || ''}"
+          readonly
+          id="view-password-${item.id}"
+        >
+        <button onclick="toggleViewPassword('view-password-${item.id}')">👁</button>
+        <button onclick="copy('${item.password || ''}')">📋</button>
+      </div>
 
-  const { data:shots } = await supabase
-    .from("screenshots")
-    .select("*")
-    .eq("account_id",id);
+      
+      ${item.notes ? `<label>Notes</label><p style="font-size:0.9rem">${item.notes}</p>` : ''}
 
-  detail.style.display="block";
-  detail.innerHTML=`
-    <h3>${item.name}</h3>
-    <p><b>Identifier:</b> ${item.identifier}</p>
-    <p>${item.notes||""}</p>
-    <h4>Screenshots</h4>
-    ${shots && shots.length
-      ? shots.map(s=>`<img src="${s.url}">`).join("")
-      : "<p style='color:#6b7280'>None</p>"
-    }
-  `;
+      <div style="max-height: 200px; overflow-y: auto; margin-top:10px;">
+        ${(data||[]).map(s=>`
+            <div class="file-row">
+            <button class="remove-file" onclick="removeFile('${s.id}','${s.url}')">×</button>
+            <img src="${s.url}">
+            </div>`).join("")}
+      </div>
 
-  await loadItems();
+      <div class="actions">
+        <button class="danger" onclick="deleteItem('${id}')">Delete</button>
+        <button class="cancel" onclick="overlay.style.display='none'">Close</button>
+      </div>
+    </div>`;
 }
 
-/* =========================================================
-   MODALS
-========================================================= */
-function openFolderModal(){folderModal.style.display="flex"}
-function closeFolderModal(){folderModal.style.display="none"}
-function openItemModal(){itemModal.style.display="flex"}
-function closeItemModal(){itemModal.style.display="none"}
-
-/* =========================================================
-   CREATE
-========================================================= */
-async function createFolder(){
-  if(!folderName.value.trim()) return;
-  await supabase.from("folders").insert({name:folderName.value});
-  folderName.value="";
-  closeFolderModal();
-  loadFolders();
-}
-
-async function saveItem(){
-  if(!itemFolder.value){
-    alert("Folder required");
+async function saveItem() {
+  const folderId = document.getElementById("itemFolder").value;
+  if (!folderId) {
+    alert("Please create and select a folder first!");
     return;
   }
 
-  const { data:inserted } = await supabase
+  const { data, error } = await sb
     .from("accounts")
     .insert({
-      name:itemName.value,
-      identifier:itemIdentifier.value,
-      notes:itemNotes.value,
-      folder_id:itemFolder.value,
-      pinned:itemPinned.checked
+      name: itemName.value,
+      identifier: itemIdentifier.value,
+      password: itemPassword.value,
+      folder_id: folderId,
+      notify_date: itemDate.value || null,
+      pinned: itemPin.checked,
+      notes: itemNotes.value
     })
-    .select()
-    .single();
+    .select("id");
 
-  const files=itemImages.files;
-  for(const file of files){
-    const path=`${inserted.id}/${Date.now()}_${file.name}`;
-    const { error } = await supabase
-      .storage.from("screenshots")
-      .upload(path,file);
+  if (error) {
+    console.error("Save Error:", error);
+    alert("Error saving item: " + error.message);
+    return;
+  }
 
-    if(!error){
-      const { data } = supabase
-        .storage.from("screenshots")
-        .getPublicUrl(path);
+  const item = data?.[0];
 
-      await supabase.from("screenshots")
-        .insert({account_id:inserted.id,url:data.publicUrl});
+  if (!item?.id) {
+    console.error("Insert returned no item:", data);
+    alert("Item saved but ID not returned.");
+    return;
+  }
+
+  if (itemImages.files.length > 0) {
+    for (const f of itemImages.files) {
+      try {
+        const path = `${item.id}/${Date.now()}_${f.name}`;
+        await sb.storage.from("screenshots").upload(path, f);
+        const { data: urlData } =
+          sb.storage.from("screenshots").getPublicUrl(path);
+
+        await sb.from("screenshots").insert({
+          account_id: item.id,
+          url: urlData.publicUrl
+        });
+      } catch (uploadError) {
+        console.error("Image upload failed:", uploadError);
+      }
     }
   }
 
-  itemName.value="";
-  itemIdentifier.value="";
-  itemNotes.value="";
-  itemImages.value="";
-  itemPinned.checked=false;
-
   closeItemModal();
+  await loadItems();
+
+  state.activeFolder ? renderItems() : showDashboard();
+}
+
+function toggleViewPassword(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === "password" ? "text" : "password";
+}
+
+async function deleteItem(id){
+  if(!confirm("Are you sure?")) return;
+  await sb.from("accounts").delete().eq("id",id);
+  overlay.style.display="none";
+  await loadItems();
+  renderItems();
+}
+
+async function removeFile(id,url){
+  const path = url.split("/screenshots/")[1];
+  await sb.storage.from("screenshots").remove([path]);
+  await sb.from("screenshots").delete().eq("id",id);
+  overlay.style.display="none";
   loadItems();
+}
+
+async function deleteFolder(id){
+  if(!confirm("Delete folder and all contents?")) return;
+  await sb.from("folders").delete().eq("id",id);
+  state.activeFolder=null;
+  await loadFolders();
+  showDashboard();
+}
+
+function openItemModal(){ document.getElementById("itemModal").style.display="flex"; }
+function closeItemModal(){ document.getElementById("itemModal").style.display="none"; }
+function openFolderModal(){ document.getElementById("folderModal").style.display="flex"; }
+function closeFolderModal(){ document.getElementById("folderModal").style.display="none"; }
+
+async function createFolder(){
+  if(!folderName.value) return;
+  await sb.from("folders").insert({name:folderName.value});
+  folderName.value="";
+  closeFolderModal();
+  await loadFolders();
 }
 </script>
 
